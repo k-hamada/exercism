@@ -5,7 +5,7 @@
 
 class HelloWorld {
   hello() {
-    return this.constructor.name.split(/(?=W)/).join(", ").padEnd(13, "!");
+    return this.constructor.name.split(/(?=W)/).join(', ').padEnd(13, '!');
   }
 }
 
