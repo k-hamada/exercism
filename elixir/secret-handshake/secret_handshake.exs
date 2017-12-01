@@ -1,13 +1,6 @@
 defmodule SecretHandshake do
   use Bitwise
 
-  @pair [
-    {0b00001, "wink"},
-    {0b00010, "double blink"},
-    {0b00100, "close your eyes"},
-    {0b01000, "jump"}
-  ]
-
   @doc """
   Determine the actions of a secret handshake based on the binary
   representation of the given `code`.
@@ -24,17 +17,17 @@ defmodule SecretHandshake do
   """
   @spec commands(code :: integer) :: list(String.t())
   def commands(code) do
-    @pair
-    |> Enum.map(fn({flag, word}) -> command_impl(code, flag, word) end)
-    |> Enum.reject(&is_nil/1)
-    |> SecretHandshake.command_impl2(code)
+    case hand_shake(code) do
+      words when ((code &&& 0b10000) != 0) ->
+        Enum.reverse(words)
+      words ->
+        words
+    end
   end
 
-  def command_impl(code, flag, word) do
-    if ((code &&& flag) != 0), do: word, else: nil
-  end
-
-  def command_impl2(words, code) do
-    if ((code &&& 0b10000) != 0), do: Enum.reverse(words), else: words
-  end
+  def hand_shake(code) when (code &&& 0b00001) != 0 do ["wink"             | hand_shake(code ^^^ 0b00001)] end
+  def hand_shake(code) when (code &&& 0b00010) != 0 do ["double blink"     | hand_shake(code ^^^ 0b00010)] end
+  def hand_shake(code) when (code &&& 0b00100) != 0 do ["close your eyes"  | hand_shake(code ^^^ 0b00100)] end
+  def hand_shake(code) when (code &&& 0b01000) != 0 do ["jump"             | hand_shake(code ^^^ 0b01000)] end
+  def hand_shake(_) do [] end
 end
