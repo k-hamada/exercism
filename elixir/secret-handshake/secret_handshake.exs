@@ -17,17 +17,13 @@ defmodule SecretHandshake do
   """
   @spec commands(code :: integer) :: list(String.t())
   def commands(code) do
-    case hand_shake(code) do
-      words when ((code &&& 0b10000) != 0) ->
-        Enum.reverse(words)
-      words ->
-        words
-    end
+    secret_hand_shake(code, [])
   end
 
-  def hand_shake(code) when (code &&& 0b00001) != 0 do ["wink"             | hand_shake(code ^^^ 0b00001)] end
-  def hand_shake(code) when (code &&& 0b00010) != 0 do ["double blink"     | hand_shake(code ^^^ 0b00010)] end
-  def hand_shake(code) when (code &&& 0b00100) != 0 do ["close your eyes"  | hand_shake(code ^^^ 0b00100)] end
-  def hand_shake(code) when (code &&& 0b01000) != 0 do ["jump"             | hand_shake(code ^^^ 0b01000)] end
-  def hand_shake(_) do [] end
+  def secret_hand_shake(code, words) when (code &&& 0b00001) != 0 do secret_hand_shake((code ^^^ 0b00001), words ++ ["wink"]           ) end
+  def secret_hand_shake(code, words) when (code &&& 0b00010) != 0 do secret_hand_shake((code ^^^ 0b00010), words ++ ["double blink"]   ) end
+  def secret_hand_shake(code, words) when (code &&& 0b00100) != 0 do secret_hand_shake((code ^^^ 0b00100), words ++ ["close your eyes"]) end
+  def secret_hand_shake(code, words) when (code &&& 0b01000) != 0 do secret_hand_shake((code ^^^ 0b01000), words ++ ["jump"]           ) end
+  def secret_hand_shake(code, words) when (code &&& 0b10000) != 0 do secret_hand_shake((code ^^^ 0b10000), Enum.reverse(words)         ) end
+  def secret_hand_shake(_, words) do words end
 end
