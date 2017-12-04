@@ -7,6 +7,19 @@ defmodule Strain do
   """
   @spec keep(list :: list(any), fun :: ((any) -> boolean)) :: list(any)
   def keep(list, fun) do
+    keep_list(list, fun)
+  end
+
+  defp keep_list([head | tail], fun) do
+    if (fun.(head)) do
+      [head | keep_list(tail, fun)]
+    else
+      keep_list(tail, fun)
+    end
+  end
+
+  defp keep_list([], _fun) do
+    []
   end
 
   @doc """
@@ -17,5 +30,18 @@ defmodule Strain do
   """
   @spec discard(list :: list(any), fun :: ((any) -> boolean)) :: list(any)
   def discard(list, fun) do
+    discard_list(list, fun)
+  end
+
+  defp discard_list([head | tail], fun) do
+    if (!fun.(head)) do
+      [head | discard_list(tail, fun)]
+    else
+      discard_list(tail, fun)
+    end
+  end
+
+  defp discard_list([], _fun) do
+    []
   end
 end
