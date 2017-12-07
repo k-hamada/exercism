@@ -24,18 +24,31 @@ defmodule ProteinTranslation do
   """
   @spec of_rna(String.t()) :: { atom,  list(String.t()) }
   def of_rna(rna) do
-    codons = rna
+    rna
     |> to_codons
-    |> Enum.map(&(@codon_map[&1]))
-    |> Enum.take_while(fn (codon) -> codon != "STOP" end)
-    |> Enum.reject(&is_nil/1)
-    unless(Enum.empty?(codons), [do: {:ok, codons}, else: {:error, "invalid RNA"}])
+    |> to_rna
   end
 
   defp to_codons(rna) do
     String.to_charlist(rna)
     |> Enum.chunk_every(3, 3, :discard)
     |> Enum.map(&List.to_string/1)
+  end
+
+  defp to_rna(codons) do
+    to_rna(codons, [])
+  end
+
+  defp to_rna([head | tail], proteins) do
+    case of_codon(head) do
+      { :error, _ } -> { :error, "invalid RNA" }
+      { :ok, "STOP" } -> to_rna([], proteins)
+      { :ok, protein } -> to_rna(tail, proteins ++ [protein])
+    end
+  end
+
+  defp to_rna([], proteins) do
+    { :ok, proteins }
   end
 
   @doc """
