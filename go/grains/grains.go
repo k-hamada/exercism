@@ -2,30 +2,26 @@ package grains
 
 import (
 	"fmt"
-	"math"
+	"math/bits"
 )
 
+// Square - how many grains were on each square
 func Square(n int) (uint64, error) {
 	switch {
 	case n < 0:
-		return 0, fmt.Errorf("negative square returns")
+		return 0, fmt.Errorf("negative square")
 	case n == 0:
-		return 0, fmt.Errorf("square 0 returns")
+		return 0, fmt.Errorf("square 0")
 	case n == 1:
 		return 1, nil
 	default:
-		return uint64(math.Pow(2, float64(n-1))), nil
+		return bits.RotateLeft64(1, n-1), nil
 	case 64 < n:
-		return 0, fmt.Errorf("square greater than 64 returns")
+		return 0, fmt.Errorf("square greater than 64")
 	}
 }
 
+// Total - total number of grains
 func Total() uint64 {
-	var r uint64
-	for i := 1; i <= 64; i++ {
-		if n, err := Square(i); err == nil {
-			r += n
-		}
-	}
-	return r
+	return 1<<64 - 1
 }
