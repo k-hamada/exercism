@@ -23,5 +23,18 @@ func Square(n int) (uint64, error) {
 
 // Total - total number of grains
 func Total() uint64 {
-	return 1<<64 - 1
+	r, ch := uint64(0), make(chan uint64)
+	for i := 1; i <= 64; i++ {
+		go func(i int, c chan<- uint64) {
+			if n, err := Square(i); err == nil {
+				c <- n
+			} else {
+				c <- 0
+			}
+		}(i, ch)
+	}
+	for i := 1; i <= 64; i++ {
+		r += <-ch
+	}
+	return r
 }
