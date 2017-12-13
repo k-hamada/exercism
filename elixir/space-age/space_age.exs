@@ -2,7 +2,7 @@ defmodule SpaceAge do
   @type planet :: :mercury | :venus | :earth | :mars | :jupiter
                 | :saturn | :uranus | :neptune
 
-  @earth_seconds 31_557_600
+  @earth_second 31_557_600
   @planets %{
   	mercury: 0.2408467,
   	venus:   0.6151972,
@@ -20,6 +20,9 @@ defmodule SpaceAge do
   """
   @spec age_on(planet, pos_integer) :: float
   def age_on(planet, seconds) do
-    seconds / (@planets[planet] * @earth_seconds)
+    case Map.fetch(@planets, planet) do
+      {:ok, planet_second} -> seconds / (planet_second * @earth_second)
+      :error -> 0
+    end
   end
 end
