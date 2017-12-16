@@ -20,9 +20,6 @@ defmodule SpaceAge do
   """
   @spec age_on(planet, pos_integer) :: float
   def age_on(planet, seconds) do
-    case Map.fetch(@planets, planet) do
-      {:ok, planet_second} -> seconds / (planet_second * @earth_second)
-      :error -> 0
-    end
+    seconds / (@planets[planet] * @earth_second)
   end
 end
