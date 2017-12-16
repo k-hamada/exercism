@@ -17,11 +17,6 @@ defmodule Bob do
   end
 
   defp yell?(input) do
-    words = String.split(input, ~r/[[:digit:][:punct:][:space:]]/, trim: true)
-    unless Enum.empty?(words) do
-      words |> Enum.all?(&(&1 == String.upcase(&1)))
-    else
-      false
-    end
+    input == String.upcase(input) && input != String.downcase(input)
   end
 end
