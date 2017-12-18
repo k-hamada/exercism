@@ -1,4 +1,34 @@
 defmodule TwelveDays do
+  @present %{
+     1 => "a Partridge in a Pear Tree",
+     2 => "two Turtle Doves",
+     3 => "three French Hens",
+     4 => "four Calling Birds",
+     5 => "five Gold Rings",
+     6 => "six Geese-a-Laying",
+     7 => "seven Swans-a-Swimming",
+     8 => "eight Maids-a-Milking",
+     9 => "nine Ladies Dancing",
+    10 => "ten Lords-a-Leaping",
+    11 => "eleven Pipers Piping",
+    12 => "twelve Drummers Drumming",
+  }
+
+  @ordinal %{
+     1 => "first",
+     2 => "second",
+     3 => "third",
+     4 => "fourth",
+     5 => "fifth",
+     6 => "sixth",
+     7 => "seventh",
+     8 => "eighth",
+     9 => "ninth",
+    10 => "tenth",
+    11 => "eleventh",
+    12 => "twelfth",
+  }
+
   @doc """
   Given a `number`, return the song's verse for that specific day, including
   all gifts for previous days in the same line.
@@ -27,23 +57,9 @@ defmodule TwelveDays do
     verses(1, 12)
   end
 
-
   defp day(n) do
-    "On the #{ordinal(n)} day of Christmas my true love gave to me"
+    "On the #{@ordinal[n]} day of Christmas my true love gave to me"
   end
-
-  defp ordinal(n) when n ==  1 do "first" end
-  defp ordinal(n) when n ==  2 do "second" end
-  defp ordinal(n) when n ==  3 do "third" end
-  defp ordinal(n) when n ==  4 do "fourth" end
-  defp ordinal(n) when n ==  5 do "fifth" end
-  defp ordinal(n) when n ==  6 do "sixth" end
-  defp ordinal(n) when n ==  7 do "seventh" end
-  defp ordinal(n) when n ==  8 do "eighth" end
-  defp ordinal(n) when n ==  9 do "ninth" end
-  defp ordinal(n) when n == 10 do "tenth" end
-  defp ordinal(n) when n == 11 do "eleventh" end
-  defp ordinal(n) when n == 12 do "twelfth" end
 
   defp presents(n) do
     Enum.to_list(n..1)
@@ -53,27 +69,14 @@ defmodule TwelveDays do
   end
 
   defp presents([1], []) do
-    [present(1)]
+    [@present[1]]
   end
 
   defp presents([1], lst) do
-    ["and #{present(1)}" | lst]
+    ["and #{@present[1]}" | lst]
   end
 
   defp presents([h | t], lst) do
-    presents(t, [present(h) | lst])
+    presents(t, [@present[h] | lst])
   end
-
-  defp present(n) when n ==  1 do "a Partridge in a Pear Tree" end
-  defp present(n) when n ==  2 do "two Turtle Doves" end
-  defp present(n) when n ==  3 do "three French Hens" end
-  defp present(n) when n ==  4 do "four Calling Birds" end
-  defp present(n) when n ==  5 do "five Gold Rings" end
-  defp present(n) when n ==  6 do "six Geese-a-Laying" end
-  defp present(n) when n ==  7 do "seven Swans-a-Swimming" end
-  defp present(n) when n ==  8 do "eight Maids-a-Milking" end
-  defp present(n) when n ==  9 do "nine Ladies Dancing" end
-  defp present(n) when n == 10 do "ten Lords-a-Leaping" end
-  defp present(n) when n == 11 do "eleven Pipers Piping" end
-  defp present(n) when n == 12 do "twelve Drummers Drumming" end
 end
