@@ -17,5 +17,14 @@ defmodule Accumulate do
 
   @spec accumulate(list, (any -> any)) :: list
   def accumulate(list, fun) do
+    acc(list, fun)
+  end
+
+  defp acc([h | t], fun) do
+    [fun.(h) | acc(t, fun)]
+  end
+
+  defp acc([], _) do
+    []
   end
 end
