@@ -10,6 +10,22 @@ defmodule Raindrops do
   """
   @spec convert(pos_integer) :: String.t
   def convert(number) do
-
+    [
+      raindrop(number, 3, "Pling"),
+      raindrop(number, 5, "Plang"),
+      raindrop(number, 7, "Plong"),
+    ]
+    |> Enum.join
+    |> output(to_string(number))
   end
+
+  defp raindrop(number, factor, word) do
+    case Integer.mod(number, factor) do
+      0 -> word
+      _ -> ""
+    end
+  end
+
+  defp output(raindrops, _)       when raindrops != "", do: raindrops
+  defp output(raindrops, through) when raindrops == "", do: through
 end
