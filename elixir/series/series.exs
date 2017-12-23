@@ -8,7 +8,7 @@ defmodule StringSeries do
   def slices(s, size) when size <= 0, do: []
   def slices(s, size) do
     s
-    |> String.codepoints
+    |> String.graphemes
     |> Enum.chunk_every(size, 1, :discard)
     |> Enum.map(&Enum.join/1)
   end
