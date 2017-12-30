@@ -20,12 +20,12 @@ defmodule Raindrops do
   end
 
   defp raindrop(number, factor, word) do
-    case Integer.mod(number, factor) do
+    case rem(number, factor) do
       0 -> word
       _ -> ""
     end
   end
 
-  defp output(raindrops, _)       when raindrops != "", do: raindrops
-  defp output(raindrops, through) when raindrops == "", do: through
+  defp output("", through), do: through
+  defp output(raindrops, _), do: raindrops
 end
