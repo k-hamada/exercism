@@ -8,11 +8,39 @@ defmodule RunLengthEncoder do
   """
   @spec encode(String.t) :: String.t
   def encode(string) do
-
+    string
+    |> String.to_charlist
+    |> Enum.chunk_by(&(&1))
+    |> Enum.map(&to_count_and_word/1)
+    |> Enum.map(&contract/1)
+    |> Enum.join
   end
 
   @spec decode(String.t) :: String.t
   def decode(string) do
+    string
+    |> from_count_and_word(&expand/2)
+  end
 
+  defp to_count_and_word(strings) do
+    [Enum.count(strings), <<hd(strings)>>]
+  end
+
+  defp contract([1, string]) do
+    string
+  end
+
+  defp contract([count, string]) do
+    to_string(count) <> string
+  end
+
+  defp from_count_and_word(string, fun) do
+    Regex.replace(~r/(\d+)(.)/, string, fn _, count, word -> fun.(count, word) end)
+  end
+
+  defp expand(count, word) do
+    word
+    |> List.duplicate(String.to_integer(count))
+    |> Enum.join
   end
 end
