@@ -10,13 +10,11 @@ defmodule MatrixTest do
 
   @input "1 2 3\n4 5 6\n7 8 9"
 
-  #@tag :pending
   test "reading from and writing to string" do
     matrix = Matrix.from_string(@input)
     assert Matrix.to_string(matrix) == @input
   end
 
-  @tag :pending
   test "rows should return nested lists regardless of internal structure" do
     matrix = Matrix.from_string(@input)
 
@@ -27,7 +25,6 @@ defmodule MatrixTest do
     ]
   end
 
-  @tag :pending
   test "row should return list at index" do
     matrix = Matrix.from_string(@input)
 
@@ -36,7 +33,6 @@ defmodule MatrixTest do
     assert Matrix.row(matrix, 2) == [7, 8, 9]
   end
 
-  @tag :pending
   test "columns should return nested lists regardless of internal structure" do
     matrix = Matrix.from_string(@input)
 
@@ -47,7 +43,6 @@ defmodule MatrixTest do
     ]
   end
 
-  @tag :pending
   test "column should return list at index" do
     matrix = Matrix.from_string(@input)
 

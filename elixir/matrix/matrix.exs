@@ -7,6 +7,10 @@ defmodule Matrix do
   """
   @spec from_string(input :: String.t()) :: %Matrix{}
   def from_string(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&parse_row/1)
+    |> to_struct
   end
 
   @doc """
@@ -15,13 +19,18 @@ defmodule Matrix do
   """
   @spec to_string(matrix :: %Matrix{}) :: String.t()
   def to_string(matrix) do
+    matrix
+    |> Matrix.rows
+    |> Enum.map(&(Enum.join(&1, " ")))
+    |> Enum.join("\n")
   end
 
   @doc """
   Given a `matrix`, return its rows as a list of lists of integers.
   """
   @spec rows(matrix :: %Matrix{}) :: list(list(integer))
-  def rows(matrix) do
+  def rows(%Matrix{matrix: matrix}) do
+    matrix
   end
 
   @doc """
@@ -29,6 +38,9 @@ defmodule Matrix do
   """
   @spec row(matrix :: %Matrix{}, index :: integer) :: list(integer)
   def row(matrix, index) do
+    matrix
+    |> Matrix.rows
+    |> Enum.at(index)
   end
 
   @doc """
@@ -36,6 +48,9 @@ defmodule Matrix do
   """
   @spec columns(matrix :: %Matrix{}) :: list(list(integer))
   def columns(matrix) do
+    matrix
+    |> Matrix.rows
+    |> transpose
   end
 
   @doc """
@@ -43,6 +58,24 @@ defmodule Matrix do
   """
   @spec column(matrix :: %Matrix{}, index :: integer) :: list(integer)
   def column(matrix, index) do
+    matrix
+    |> Matrix.columns
+    |> Enum.at(index)
+  end
+
+  defp to_struct(rows) do
+    %Matrix{matrix: rows}
+  end
+
+  defp parse_row(input) do
+    input
+    |> String.split(" ")
+    |> Enum.map(&String.to_integer/1)
+  end
+
+  defp transpose(rows) do
+    rows
+    |> List.zip
+    |> Enum.map(&Tuple.to_list/1)
   end
 end
-
