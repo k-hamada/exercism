@@ -1,4 +1,11 @@
 defmodule RNATranscription do
+  @complement_table %{
+    ?G => ?C,
+    ?C => ?G,
+    ?T => ?A,
+    ?A => ?U,
+  }
+
   @doc """
   Transcribes a character list representing DNA nucleotides to RNA
 
@@ -9,6 +16,7 @@ defmodule RNATranscription do
   """
   @spec to_rna([char]) :: [char]
   def to_rna(dna) do
-
+    dna
+    |> Enum.map(&Map.get(@complement_table, &1))
   end
 end
