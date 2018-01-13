@@ -9,21 +9,14 @@ defmodule Triangle do
     triangle(a, b, c)
   end
 
-  defp triangle(x, y, z) when x <= 0 or y <= 0 or z <= 0, do: {:error, "all side lengths must be positive"}
+  defp triangle(x, y, z) when x <= 0 or y <= 0 or z <= 0,
+    do: {:error, "all side lengths must be positive"}
+  defp triangle(x, y, z) when x + y <= z or y + z <= x or z + x <= y,
+    do: {:error, "side lengths violate triangle inequality"}
 
-  defp triangle(x, x, x), do: equilateral(x, x, x)
-  defp triangle(x, x, y), do: isosceles(x, x, y)
-  defp triangle(x, y, x), do: isosceles(x, x, y)
-  defp triangle(y, x, x), do: isosceles(x, x, y)
-  defp triangle(x, y, z), do: scalene(x, y, z)
-
-  defp equilateral(_, _, _), do: {:ok, :equilateral}
-
-  defp isosceles(x, y, z) when x + y <= z, do: {:error, "side lengths violate triangle inequality"}
-  defp isosceles(_, _, _), do: {:ok, :isosceles}
-
-  defp scalene(x, y, z) when x + y <= z, do: {:error, "side lengths violate triangle inequality"}
-  defp scalene(y, z, x) when x + y <= z, do: {:error, "side lengths violate triangle inequality"}
-  defp scalene(z, x, y) when x + y <= z, do: {:error, "side lengths violate triangle inequality"}
-  defp scalene(_, _, _), do: {:ok, :scalene}
+  defp triangle(x, x, x), do: {:ok, :equilateral}
+  defp triangle(x, x, _), do: {:ok, :isosceles}
+  defp triangle(x, _, x), do: {:ok, :isosceles}
+  defp triangle(_, x, x), do: {:ok, :isosceles}
+  defp triangle(_, _, _), do: {:ok, :scalene}
 end
