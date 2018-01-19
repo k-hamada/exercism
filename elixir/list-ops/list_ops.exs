@@ -78,11 +78,15 @@ defmodule ListOps do
 
   @spec append(list, list) :: list
   def append(a, b) do
-    append_impl(a, b)
+    append_impl(reverse(a), b)
   end
 
-  defp append_impl(a, b) do
-    reduce_impl(reverse(a), b, &[&1 | &2])
+  defp append_impl([], b) do
+    b
+  end
+
+  defp append_impl([h | t], b) do
+    append_impl(t, [h | b])
   end
 
   @spec concat([[any]]) :: [any]
@@ -90,15 +94,7 @@ defmodule ListOps do
     concat_impl(ll, [])
   end
 
-  defp concat_impl([], acc) do
-    reverse(acc)
-  end
-
-  defp concat_impl([h | t], acc) when is_list(h) do
-    concat_impl(t, append(reverse(h), acc))
-  end
-
-  defp concat_impl([h | t], acc) do
-    concat_impl(t, [h | acc])
+  defp concat_impl(ll, acc) do
+    reduce(reverse(ll), acc, &append/2)
   end
 end
