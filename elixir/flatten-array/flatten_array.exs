@@ -23,6 +23,5 @@ defmodule FlattenArray do
 
   defp flatten_impl([]), do: []
   defp flatten_impl(nil), do: []
-  defp flatten_impl(false), do: []
   defp flatten_impl(v), do: [v]
 end
