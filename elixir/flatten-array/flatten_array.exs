@@ -14,6 +14,15 @@ defmodule FlattenArray do
 
   @spec flatten(list) :: list
   def flatten(list) do
-
+    flatten_impl(list)
   end
+
+  defp flatten_impl([h | t]) do
+    flatten_impl(h) ++ flatten_impl(t)
+  end
+
+  defp flatten_impl([]), do: []
+  defp flatten_impl(nil), do: []
+  defp flatten_impl(false), do: []
+  defp flatten_impl(v), do: [v]
 end
