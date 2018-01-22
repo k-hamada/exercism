@@ -1,27 +1,24 @@
 package erratum
 
-func Use(o ResourceOpener, input string) (useError error) {
-again:
-	res, err := o()
-	if err != nil {
-		if _, ok := err.(TransientError); ok {
-			goto again
+func Use(o ResourceOpener, input string) (err error) {
+	var res Resource
+	for {
+		res, err = o()
+		if err == nil {
+			break
 		}
-		useError = err
+		if _, ok := err.(TransientError); ok {
+			continue
+		}
 		return
 	}
+	defer res.Close()
 	defer func() {
-		res.Close()
-	}()
-	defer func() {
-		if err := recover(); err != nil {
-			switch recoverError := err.(type) {
-			case FrobError:
-				res.Defrob(recoverError.defrobTag)
-				useError = recoverError.inner
-			case error:
-				useError = recoverError
+		if rec := recover(); rec != nil {
+			if frob, ok := rec.(FrobError); ok {
+				res.Defrob(frob.defrobTag)
 			}
+			err = rec.(error)
 		}
 	}()
 	res.Frob(input)
