@@ -15,8 +15,27 @@ defmodule Change do
 
   """
 
-  @spec generate(list, integer) :: {:ok, list} | {:error, String.t}
+  @spec generate(list, integer) :: {:ok, list} | {:error, String.t()}
   def generate(coins, target) do
+    calculate(%{0 => []}, coins, 0, target)
+  end
 
+  defp calculate(_, _, index, target) when index > target do
+    {:error, "cannot change"}
+  end
+
+  defp calculate(payable, coins, index, target) do
+    if Map.has_key?(payable, target) do
+      {:ok, Enum.sort(payable[target])}
+    else
+      payable_plus_one =
+        Enum.reduce(payable, %{}, fn {money, howto}, payable_acc ->
+          Enum.reduce(coins, payable_acc, fn coin, coins_acc ->
+            Map.put(coins_acc, money + coin, [coin | howto])
+          end)
+        end)
+
+      calculate(payable_plus_one, coins, index + 1, target)
+    end
   end
 end
