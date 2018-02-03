@@ -15,7 +15,23 @@ defmodule ScaleGenerator do
   """
   @spec step(scale :: list(String.t()), tonic :: String.t(), step :: String.t()) :: list(String.t())
   def step(scale, tonic, step) do
+    scale
+    |> scale_start_at(tonic)
+    |> step_at(step)
   end
+
+  defp scale_start_at(scale, tonic) do
+    tonic = String.upcase(tonic)
+    tonic_at = scale |> Enum.map(&String.upcase/1) |> Enum.find_index(&(tonic == &1))
+
+    scale
+    |> Stream.cycle()
+    |> Stream.drop(tonic_at)
+  end
+
+  defp step_at(scale, "m"), do: Enum.at(scale, 1)
+  defp step_at(scale, "M"), do: Enum.at(scale, 2)
+  defp step_at(scale, "A"), do: Enum.at(scale, 3)
 
   @doc """
   The chromatic scale is a musical scale with thirteen pitches, each a semitone
@@ -33,6 +49,9 @@ defmodule ScaleGenerator do
   """
   @spec chromatic_scale(tonic :: String.t()) :: list(String.t())
   def chromatic_scale(tonic \\ "C") do
+    ~w(C C# D D# E F F# G G# A A# B)
+    |> scale_start_at(tonic)
+    |> Enum.take(13)
   end
 
   @doc """
@@ -49,6 +68,9 @@ defmodule ScaleGenerator do
   """
   @spec flat_chromatic_scale(tonic :: String.t()) :: list(String.t())
   def flat_chromatic_scale(tonic \\ "C") do
+    ~w(C Db D Eb E F Gb G Ab A Bb B)
+    |> scale_start_at(tonic)
+    |> Enum.take(13)
   end
 
   @doc """
@@ -63,6 +85,11 @@ defmodule ScaleGenerator do
   """
   @spec find_chromatic_scale(tonic :: String.t()) :: list(String.t())
   def find_chromatic_scale(tonic) do
+    if tonic in ~w(F Bb Eb Ab Db Gb d g c f bb eb) do
+      flat_chromatic_scale(tonic)
+    else
+      chromatic_scale(tonic)
+    end
   end
 
   @doc """
@@ -78,6 +105,14 @@ defmodule ScaleGenerator do
   """
   @spec scale(tonic :: String.t(), pattern :: String.t()) :: list(String.t())
   def scale(tonic, pattern) do
+    chromatic_scale = ScaleGenerator.find_chromatic_scale(tonic)
+    accumulator = chromatic_scale |> Enum.take(1)
+
+    pattern
+    |> String.graphemes()
+    |> Enum.reduce(accumulator, fn step, acc ->
+      [ScaleGenerator.step(chromatic_scale, hd(acc), step) | acc]
+    end)
+    |> Enum.reverse()
   end
 end
-
