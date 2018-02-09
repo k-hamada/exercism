@@ -1,4 +1,9 @@
 defmodule Markdown do
+  @rule_heading ~r/\A(?<header>\#{1,6})\s+(?<inner>.*)/
+  @rule_list ~r/\A\s*[\*|-]\s.*/
+  @rule_listitem ~r/\A(?<nest>\s*)\*\s(?<inner>.*)/
+  @rule_strong ~r/(?<before>.*?)(?:__(?<strong>.+)__)(?<after>.*)/
+  @rule_emphasis ~r/(?<before>.*?)(?:_(?<emphasis>.+)_)(?<after>.*)/
   @doc """
     Parses a given string with Markdown syntax and returns the associated HTML for that string.
 
@@ -10,66 +15,137 @@ defmodule Markdown do
     iex> Markdown.parse("#Header!\n* __Bold Item__\n* _Italic Item_")
     "<h1>Header!</h1><ul><li><em>Bold Item</em></li><li><i>Italic Item</i></li></ul>"
   """
-  @spec parse(String.t) :: String.t
-  def parse(m) do
-    patch(Enum.join(Enum.map(String.split(m, "\n"), fn(t) -> process(t) end)))
+  @spec parse(String.t()) :: String.t()
+  def parse(text) do
+    text
+    |> to_ast
+    |> output
   end
 
-  defp process(t) do
-    if String.starts_with?(t, "#") || String.starts_with?(t, "*") do
-      if String.starts_with?(t, "#") do
-        enclose_with_header_tag(parse_header_md_level(t))
-      else
-        parse_list_md_level(t)
-      end
-    else
-      enclose_with_paragraph_tag(String.split(t))
-    end
+  defp to_ast(text) do
+    text
+    |> String.split("\n")
+    |> to_ast_blocks([])
   end
 
-  defp parse_header_md_level(hwt) do
-    [h | t] = String.split(hwt)
-    {to_string(String.length(h)), Enum.join(t, " ")}
+  defp to_ast_blocks([], acc) do
+    acc
+    |> Enum.reverse()
   end
 
-  defp parse_list_md_level(l) do
-    t = String.split(String.trim_leading(l, "* "))
-    "<li>" <> join_words_with_tags(t) <> "</li>"
-  end
-
-  defp enclose_with_header_tag({hl, htl}) do
-    "<h" <> hl <> ">" <> htl <> "</h" <> hl <> ">"
-  end
-
-  defp enclose_with_paragraph_tag(t) do
-    "<p>#{join_words_with_tags(t)}</p>"
-  end
-
-  defp join_words_with_tags(t) do
-    Enum.join(Enum.map(t, fn(w) -> replace_md_with_tag(w) end), " ")
-  end
-
-  defp replace_md_with_tag(w) do
-    replace_suffix_md(replace_prefix_md(w))
-  end
-
-  defp replace_prefix_md(w) do
+  defp to_ast_blocks([head | tail], acc) do
     cond do
-      w =~ ~r/^#{"__"}{1}/ -> String.replace(w, ~r/^#{"__"}{1}/, "<strong>", global: false)
-      w =~ ~r/^[#{"_"}{1}][^#{"_"}+]/ -> String.replace(w, ~r/_/, "<em>", global: false)
-      true -> w
+      node = is_header_line?(head) ->
+        new_ast_block = to_ast_heading(head)
+        to_ast_blocks(tail, [new_ast_block | acc])
+
+      is_list_line?(head) ->
+        {lines, tail} = Enum.split_while([head | tail], &is_list_line?/1)
+        new_ast_block = to_ast_list(lines)
+        to_ast_blocks(tail, [new_ast_block | acc])
+
+      true ->
+        new_ast_block = to_ast_paragraph(head)
+        to_ast_blocks(tail, [new_ast_block | acc])
     end
   end
 
-  defp replace_suffix_md(w) do
+  defp is_header_line?(line) do
+    line
+    |> String.match?(@rule_heading)
+  end
+
+  defp is_list_line?(line) do
+    line
+    |> String.match?(@rule_list)
+  end
+
+  defp to_ast_heading(line) do
+    node = Regex.named_captures(@rule_heading, line)
+    {:heading, to_ast_inline(node["inner"]), depth: String.length(node["header"])}
+  end
+
+  defp to_ast_list(lines) do
+    {:list, Enum.map(lines, &to_ast_listitem/1)}
+  end
+
+  defp to_ast_listitem(line) do
+    node = Regex.named_captures(@rule_listitem, line)
+    {:listitem, to_ast_inline(node["inner"]), depth: String.length(node["nest"]) |> rem(2)}
+  end
+
+  defp to_ast_paragraph(line) do
+    {:paragraph, to_ast_inline(line)}
+  end
+
+  defp to_ast_inline("") do
+    {:empty}
+  end
+
+  defp to_ast_inline(text) do
     cond do
-      w =~ ~r/#{"__"}{1}$/ -> String.replace(w, ~r/#{"__"}{1}$/, "</strong>")
-      w =~ ~r/[^#{"_"}{1}]/ -> String.replace(w, ~r/_/, "</em>")
-      true -> w
+      node = Regex.named_captures(@rule_strong, text) ->
+        [
+          to_ast_inline(node["before"]),
+          to_ast_strong(node["strong"]),
+          to_ast_inline(node["after"])
+        ]
+
+      node = Regex.named_captures(@rule_emphasis, text) ->
+        [
+          to_ast_inline(node["before"]),
+          to_ast_emphasis(node["emphasis"]),
+          to_ast_inline(node["after"])
+        ]
+
+      true ->
+        {:text, text}
     end
   end
 
-  defp patch(l) do
-    String.replace_suffix(String.replace(l, "<li>", "<ul>" <> "<li>", global: false), "</li>", "</li>" <> "</ul>")
+  defp to_ast_strong(text) do
+    {:strong, to_ast_inline(text)}
+  end
+
+  defp to_ast_emphasis(text) do
+    {:emphasis, to_ast_inline(text)}
+  end
+
+  defp output(ast) when is_list(ast) do
+    ast
+    |> Enum.map(&output/1)
+    |> Enum.join()
+  end
+
+  defp output({:paragraph, childrens}) do
+    "<p>#{output(childrens)}</p>"
+  end
+
+  defp output({:heading, text, depth: depth}) do
+    "<h#{depth}>#{output(text)}</h#{depth}>"
+  end
+
+  defp output({:list, listitems}) do
+    "<ul>#{output(listitems)}</ul>"
+  end
+
+  defp output({:listitem, text, depth: _}) do
+    "<li>#{output(text)}</li>"
+  end
+
+  defp output({:strong, value}) do
+    "<strong>#{output(value)}</strong>"
+  end
+
+  defp output({:emphasis, value}) do
+    "<em>#{output(value)}</em>"
+  end
+
+  defp output({:text, value}) do
+    value
+  end
+
+  defp output({:empty}) do
+    ""
   end
 end
