@@ -5,17 +5,9 @@ defmodule PascalsTriangle do
   """
   @spec rows(integer) :: [[integer]]
   def rows(num) do
-    1..num
-    |> Enum.reduce([], &get_row/2)
-    |> Enum.reverse()
-  end
-
-  defp get_row(1, _) do
-    [[1]]
-  end
-
-  defp get_row(_, [head | tail]) do
-    [next_row(head) | [head | tail]]
+    [1]
+    |> Stream.iterate(&next_row/1)
+    |> Enum.take(num)
   end
 
   defp next_row(list) do
