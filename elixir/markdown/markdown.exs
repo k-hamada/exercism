@@ -33,14 +33,14 @@ defmodule Markdown do
     |> Enum.reverse()
   end
 
-  defp to_ast_blocks([head | tail], acc) do
+  defp to_ast_blocks([head | tail] = lines, acc) do
     cond do
-      node = is_header_line?(head) ->
+      is_header_line?(head) ->
         new_ast_block = to_ast_heading(head)
         to_ast_blocks(tail, [new_ast_block | acc])
 
       is_list_line?(head) ->
-        {lines, tail} = Enum.split_while([head | tail], &is_list_line?/1)
+        {lines, tail} = Enum.split_while(lines, &is_list_line?/1)
         new_ast_block = to_ast_list(lines)
         to_ast_blocks(tail, [new_ast_block | acc])
 
