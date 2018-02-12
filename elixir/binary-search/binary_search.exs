@@ -19,6 +19,25 @@ defmodule BinarySearch do
 
   @spec search(tuple, integer) :: {:ok, integer} | :not_found
   def search(numbers, key) do
+    bsearch_index(numbers, key, 0, tuple_size(numbers) - 1)
+  end
 
+  defp bsearch_index({}, _, _, _) do
+    :not_found
+  end
+
+  defp bsearch_index(_, _, min, max) when min > max do
+    :not_found
+  end
+
+  defp bsearch_index(numbers, key, min, max) do
+    c = (min + (max - min) / 2) |> trunc
+    el = elem(numbers, c)
+
+    cond do
+      el == key -> {:ok, c}
+      el > key -> bsearch_index(numbers, key, min, c - 1)
+      el < key -> bsearch_index(numbers, key, c + 1, max)
+    end
   end
 end
