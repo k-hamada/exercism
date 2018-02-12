@@ -6,7 +6,7 @@ defmodule BinarySearchTree do
   """
   @spec new(any) :: bst_node
   def new(data) do
-    # Your implementation here
+    %{data: data}
   end
 
   @doc """
@@ -14,7 +14,21 @@ defmodule BinarySearchTree do
   """
   @spec insert(bst_node, any) :: bst_node
   def insert(tree, data) do
-    # Your implementation here
+    cond do
+      tree.data >= data -> insert_at(tree, data, :left)
+      tree.data < data -> insert_at(tree, data, :right)
+    end
+  end
+
+  defp insert_at(tree, data, key) do
+    node =
+      if Map.has_key?(tree, key) do
+        tree |> Map.get(key) |> insert(data)
+      else
+        new(data)
+      end
+
+    tree |> Map.put(key, node)
   end
 
   @doc """
@@ -22,6 +36,17 @@ defmodule BinarySearchTree do
   """
   @spec in_order(bst_node) :: [any]
   def in_order(tree) do
-    # Your implementation here
+    in_order_tree(tree)
+  end
+
+  defp in_order_tree(nil) do
+    []
+  end
+
+  defp in_order_tree(tree) do
+    left = Map.get(tree, :left) |> in_order_tree
+    right = Map.get(tree, :right) |> in_order_tree
+    data = Map.get(tree, :data)
+    Enum.concat([left, [data], right])
   end
 end

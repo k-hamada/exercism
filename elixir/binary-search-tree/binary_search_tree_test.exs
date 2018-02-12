@@ -12,7 +12,6 @@ defmodule BinarySearchTreeTest do
     assert BinarySearchTree.new(4).data == 4
   end
 
-  @tag :pending
   test "inserting lower number" do
     root =
       BinarySearchTree.new(4)
@@ -22,7 +21,6 @@ defmodule BinarySearchTreeTest do
     assert root.left.data == 2
   end
 
-  @tag :pending
   test "inserting same number" do
     root =
       BinarySearchTree.new(4)
@@ -32,7 +30,6 @@ defmodule BinarySearchTreeTest do
     assert root.left.data == 4
   end
 
-  @tag :pending
   test "inserting higher number" do
     root =
       BinarySearchTree.new(4)
@@ -42,7 +39,6 @@ defmodule BinarySearchTreeTest do
     assert root.right.data == 5
   end
 
-  @tag :pending
   test "complex tree" do
     root =
       BinarySearchTree.new(4)
@@ -62,14 +58,12 @@ defmodule BinarySearchTreeTest do
     assert root.right.right.data == 7
   end
 
-  @tag :pending
   test "iterating one element" do
     root = BinarySearchTree.new(4)
 
     assert [4] == BinarySearchTree.in_order(root)
   end
 
-  @tag :pending
   test "iterating over smaller element" do
     root =
       BinarySearchTree.new(4)
@@ -78,7 +72,6 @@ defmodule BinarySearchTreeTest do
     assert [2, 4] == BinarySearchTree.in_order(root)
   end
 
-  @tag :pending
   test "iterating over larger element" do
     root =
       BinarySearchTree.new(4)
@@ -87,7 +80,6 @@ defmodule BinarySearchTreeTest do
     assert [4, 5] == BinarySearchTree.in_order(root)
   end
 
-  @tag :pending
   test "iterating over complex tree" do
     root =
       BinarySearchTree.new(4)
