@@ -11,18 +11,19 @@ defmodule Diamond do
     spaces =
       1..length
       |> Enum.map(&(length - &1))
-      |> Enum.map(&[&1, length - &1 - 1])
-      |> Enum.map(&Enum.map(&1, fn n -> List.duplicate(" ", n) end))
+      |> Enum.map(&List.duplicate(" ", &1))
 
     left =
       letters
       |> Enum.zip(spaces)
-      |> Enum.map(fn {l, [s1, s2]} -> Enum.concat([s1, [[l]], s2]) end)
+      |> Enum.map(fn {l, s} -> Enum.concat([s, [[l]]]) end)
+      |> Enum.map(&Enum.join(&1))
+      |> Enum.map(&String.pad_trailing(&1, length))
 
     right =
       left
-      |> Enum.map(&Enum.reverse/1)
-      |> Enum.map(&Enum.drop(&1, 1))
+      |> Enum.map(&String.reverse/1)
+      |> Enum.map(&String.slice(&1, 1..-1))
 
     top =
       Enum.zip(left, right)
