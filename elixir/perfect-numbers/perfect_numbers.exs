@@ -27,8 +27,6 @@ defmodule PerfectNumbers do
     end
   end
 
-  defp aliquot_sum(number) when number <= 0, do: 0
-
   defp aliquot_sum(number) do
     number
     |> divisor
@@ -36,11 +34,55 @@ defmodule PerfectNumbers do
   end
 
   defp divisor(1), do: []
-  defp divisor(2), do: [1]
 
   defp divisor(number) do
-    2..(div(number, 2) + 1)
-    |> Enum.filter(&(rem(number, &1) == 0))
-    |> Enum.concat([1])
+    case factors = factors_for(number) do
+      [_] ->
+        [1]
+
+      _ ->
+        factors
+        |> combination_all
+        |> Enum.map(&prod/1)
+        |> Enum.uniq()
+        |> Enum.concat([1])
+    end
   end
+
+  defp combination_all(xs) do
+    1..(Enum.count(xs) - 1)
+    |> Enum.flat_map(&combination(&1, xs))
+  end
+
+  defp combination(0, _), do: [[]]
+  defp combination(_, []), do: []
+
+  defp combination(n, [x | xs]),
+    do: for(y <- combination(n - 1, xs), do: [x | y]) ++ combination(n, xs)
+
+  defp prod(xs), do: xs |> Enum.reduce(&*/2)
+
+  defp factors_for(number) do
+    do_factors_for({2, number})
+  end
+
+  defp do_factors_for({d, n}) do
+    Stream.unfold({d, n}, fn
+      nil ->
+        nil
+
+      {d, n} ->
+        Stream.iterate(d, &(&1 + 1))
+        |> Stream.take_while(&(:math.pow(&1, 2) <= n))
+        |> Stream.concat(for i <- [n], i > 1, do: i)
+        |> Stream.filter(&(Integer.mod(n, &1) == 0))
+        |> Stream.map(&{&1, {&1, div(n, &1)}})
+        |> Enum.take(1)
+        |> list_to_maybe
+    end)
+    |> Enum.to_list()
+  end
+
+  defp list_to_maybe([]), do: nil
+  defp list_to_maybe(list), do: list |> List.first()
 end
