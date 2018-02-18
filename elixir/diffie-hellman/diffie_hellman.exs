@@ -31,14 +31,12 @@ defmodule DiffieHellman do
   https://www.khanacademy.org/computing/computer-science/cryptography/modern-crypt/v/diffie-hellman-key-exchange-part-2
   """
 
-  use Bitwise, only_operators: true
-
   @doc """
   Given a prime integer `prime_p`, return a random integer between 1 and `prime_p` - 1
   """
   @spec generate_private_key(prime_p :: integer) :: integer
   def generate_private_key(prime_p) do
-    Enum.random(1..(prime_p - 1))
+    :crypto.rand_uniform(1, prime_p - 1)
   end
 
   @doc """
@@ -47,10 +45,9 @@ defmodule DiffieHellman do
 
   (prime_g **  private_key) % prime_p
   """
-  @spec generate_public_key(prime_p :: integer, prime_g :: integer, private_key :: integer) ::
-          integer
+  @spec generate_public_key(prime_p :: integer, prime_g :: integer, private_key :: integer) :: integer
   def generate_public_key(prime_p, prime_g, private_key) do
-    modexp(prime_g, private_key, prime_p)
+    mod_pow(prime_g, private_key, prime_p)
   end
 
   @doc """
@@ -59,27 +56,13 @@ defmodule DiffieHellman do
 
   (public_key_b ** private_key_a) % prime_p
   """
-  @spec generate_shared_secret(
-          prime_p :: integer,
-          public_key_b :: integer,
-          private_key_a :: integer
-        ) :: integer
+  @spec generate_shared_secret( prime_p :: integer, public_key_b :: integer, private_key_a :: integer ) :: integer
   def generate_shared_secret(prime_p, public_key_b, private_key_a) do
-    modexp(public_key_b, private_key_a, prime_p)
+    mod_pow(public_key_b, private_key_a, prime_p)
   end
 
-  defp modexp(_, 0, _), do: 1
-
-  defp modexp(b, e, m) do
-    t = if test_bit(e, 0), do: rem(b, m), else: 1
-    rem(t * modexp(rem(b * b, m), e >>> 1, m), m)
-  end
-
-  defp test_bit(x, i) do
-    (x &&& bit(i)) != 0
-  end
-
-  defp bit(i) do
-    1 <<< i
+  defp mod_pow(n, p, m) do
+    :crypto.mod_pow(n, p, m)
+    |> :binary.decode_unsigned()
   end
 end
