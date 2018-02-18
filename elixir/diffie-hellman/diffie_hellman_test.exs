@@ -8,21 +8,18 @@ ExUnit.configure exclude: :pending, trace: true
 defmodule DiffieHellmanTest do
   use ExUnit.Case
 
-  #@tag :pending
   test "private key should be between 1 and P-1, inclusive" do
     prime_p = 23
 
     assert DiffieHellman.generate_private_key(prime_p) in Range.new(1, prime_p-1)
   end
 
-  @tag :pending
   test "private key generator should support very large primes" do
     prime_p = 120227323036150778550155526710966921740030662694578947298423549235265759593711587341037426347114541533006628856300552706996143592240453345642869233562886752930249953227657883929905072620233073626594386072962776144691433658814261874113232461749035425712805067202910389407991986070558964461330091797026762932543
 
     assert DiffieHellman.generate_private_key(prime_p) in Range.new(1, prime_p-1)
   end
 
-  @tag :pending
   test "private keys should be random" do
     prime_p = 23
 
@@ -39,7 +36,6 @@ defmodule DiffieHellmanTest do
     assert unique_key_count > min_expected_unique_keys
   end
 
-  @tag :pending
   test "public key correctly calculated from two primes and private key" do
     prime_p = 23
     prime_g = 5
@@ -49,7 +45,6 @@ defmodule DiffieHellmanTest do
     assert DiffieHellman.generate_public_key(prime_p, prime_g, private_key) == expected_public_key
   end
 
-  @tag :pending
   test "public key generator should support very large primes" do
     prime_p = 120227323036150778550155526710966921740030662694578947298423549235265759593711587341037426347114541533006628856300552706996143592240453345642869233562886752930249953227657883929905072620233073626594386072962776144691433658814261874113232461749035425712805067202910389407991986070558964461330091797026762932543
     prime_g = 75205441154357919442925546169208711235485855904969178206313309299205868312399046149367516336607966149689640419216591714331722664409474612463910928128055994157922930443733535659848264364106037925315974095321112757711756912144137705613776063541350548911512715512539186192176020596861210448363099541947258202188
@@ -59,7 +54,6 @@ defmodule DiffieHellmanTest do
     assert DiffieHellman.generate_public_key(prime_p, prime_g, private_key) == expected_public_key
   end
 
-  @tag :pending
   test "shared secret key correctly calculated from initial prime, Bob's public key, and Alice's private key" do
     prime_p = 23
     bob_public_key = 19
@@ -69,7 +63,6 @@ defmodule DiffieHellmanTest do
     assert DiffieHellman.generate_shared_secret(prime_p, bob_public_key, alice_private_key) == expected_shared_secret
   end
 
-  @tag :pending
   test "shared secret correctly calculated when using large primes" do
     prime_p = 120227323036150778550155526710966921740030662694578947298423549235265759593711587341037426347114541533006628856300552706996143592240453345642869233562886752930249953227657883929905072620233073626594386072962776144691433658814261874113232461749035425712805067202910389407991986070558964461330091797026762932543
     bob_public_key = 75205441154357919442925546169208711235485855904969178206313309299205868312399046149367516336607966149689640419216591714331722664409474612463910928128055994157922930443733535659848264364106037925315974095321112757711756912144137705613776063541350548911512715512539186192176020596861210448363099541947258202188
@@ -79,7 +72,6 @@ defmodule DiffieHellmanTest do
     assert DiffieHellman.generate_shared_secret(prime_p, bob_public_key, alice_private_key) == expected_shared_secret
   end
 
-  @tag :pending
   test "exchanging public keys between Alice and Bob should calculate the same shared secret" do
     prime_p = 23
     prime_g = 5
@@ -96,4 +88,3 @@ defmodule DiffieHellmanTest do
     assert alice_shared_secret == bob_shared_secret
   end
 end
-
