@@ -57,3 +57,9 @@ fn test_a_palindrome() {
 fn test_wide_characters() {
     process_reverse_case("子猫", "猫子");
 }
+
+#[test]
+/// bonus
+fn test_bonus() {
+    process_reverse_case("uüu", "uüu");
+}
