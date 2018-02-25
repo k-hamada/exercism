@@ -1,3 +1,3 @@
-pub fn reverse(_: &str) -> String {
-    unimplemented!()
+pub fn reverse(word: &str) -> String {
+    word.chars().rev().collect::<String>()
 }
