@@ -1,18 +1,15 @@
 pub fn raindrops(n: usize) -> String {
-    let mut res = String::new();
+    let rem3 = n % 3 == 0;
+    let rem5 = n % 5 == 0;
+    let rem7 = n % 7 == 0;
 
-    if n % 3 == 0 {
-        res += "Pling"
-    }
-    if n % 5 == 0 {
-        res += "Plang"
-    }
-    if n % 7 == 0 {
-        res += "Plong"
-    }
-    if res == "" {
-        res += &n.to_string()
+    if !(rem3 || rem5 || rem7) {
+        return n.to_string()
     }
 
-    res
+    let mut s = String::new();
+    if rem3 { s.push_str("Pling") }
+    if rem5 { s.push_str("Plang") }
+    if rem7 { s.push_str("Plong") }
+    s
 }
