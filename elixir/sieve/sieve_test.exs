@@ -13,7 +13,6 @@ defmodule SieveTest do
     assert Sieve.primes_to(10) == [2, 3, 5, 7]
   end
 
-  @tag :pending
   test "primes to 1000" do
     result = [
       2,
