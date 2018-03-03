@@ -1,12 +1,12 @@
 pub fn reply(message: &str) -> &str {
     let message = message.trim();
 
-    match (is_shout(message), is_ask(message), is_silence(message)) {
-        (_   , _   , true) => "Fine. Be that way!",
-        (true, true, _   ) => "Calm down, I know what I'm doing!",
-        (true, _   , _   ) => "Whoa, chill out!",
-        (_   , true, _   ) => "Sure.",
-        _                  => "Whatever."
+    if is_silence(message) { return "Fine. Be that way!" }
+    match (is_shout(message), is_ask(message)) {
+        (true, true) => "Calm down, I know what I'm doing!",
+        (true, _   ) => "Whoa, chill out!",
+        (_   , true) => "Sure.",
+        _            => "Whatever."
     }
 }
 
