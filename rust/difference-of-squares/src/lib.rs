@@ -1,11 +1,12 @@
 pub fn square_of_sum(n: usize) -> usize {
-    unimplemented!()
+	let s = (n * (1 + n)) / 2;
+	s * s
 }
 
 pub fn sum_of_squares(n: usize) -> usize {
-    unimplemented!()
+	(n * (n + 1) * (2 * n + 1)) / 6
 }
 
 pub fn difference(n: usize) -> usize {
-    unimplemented!()
+	square_of_sum(n) - sum_of_squares(n)
 }
