@@ -19,37 +19,20 @@ defmodule Hexadecimal do
 
   @spec to_decimal(binary) :: integer
   def to_decimal(hex) do
-    case hex_to_decimal(hex) do
-      {:ok, n} -> n
-      {:error} -> 0
-    end
-  end
-
-  defp hex_to_decimal(hex) do
     hex
     |> String.upcase()
     |> String.graphemes()
     |> Enum.reverse()
     |> Enum.with_index()
-    |> Enum.map(&to_decimal_with_index/1)
-    |> Enum.reduce(&sum/2)
+    |> Enum.reduce_while(0, &to_decimal_and_sum/2)
   end
 
-  defp sum(_, {:error}), do: {:error}
-  defp sum({:error}, _), do: {:error}
-  defp sum({:ok, a}, {:ok, b}), do: {:ok, a + b}
-
-  defp to_decimal_with_index({hex, index}) do
-    with n when is_number(n) <- to_digits(hex),
+  defp to_decimal_and_sum({hex, index}, acc) do
+    with n when is_number(n) <- @digits |> Enum.find_index(&(&1 == hex)),
          b when is_number(b) <- :math.pow(@base, index) do
-      {:ok, n * b}
+      {:cont, n * b + acc}
     else
-      _ -> {:error}
+      _ -> {:halt, 0}
     end
-  end
-
-  defp to_digits(hex) do
-    @digits
-    |> Enum.find_index(&(&1 == hex))
   end
 end
