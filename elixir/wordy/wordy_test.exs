@@ -75,4 +75,8 @@ defmodule WordyTest do
       Wordy.answer("Who is the President of the United States?")
     end
   end
+
+  test "exponentials" do
+    assert Wordy.answer("What is 2 raised to the 5th power?") == 32
+  end
 end

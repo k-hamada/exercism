@@ -30,7 +30,14 @@ defmodule Wordy do
   end
 
   def do_answer([n, "divided", "by", m | question]) do
-    [calc(:div, n, m) | question]
+    [calc(:/, n, m) | question]
+    |> do_answer()
+  end
+
+  def do_answer([n, "raised", "to", "the", p, "power" | question]) do
+    [_, m] = Regex.run(~r/(\d)(?:\w+)/, p)
+
+    [calc(:pow, n, m, :math) | question]
     |> do_answer()
   end
 
@@ -42,8 +49,9 @@ defmodule Wordy do
     raise ArgumentError
   end
 
-  def calc(op, n, m) do
-    apply(Kernel, op, [n, m] |> Enum.map(&String.to_integer/1))
+  def calc(op, n, m, module \\ Kernel) do
+    apply(module, op, [n, m] |> Enum.map(&String.to_integer/1))
+    |> trunc
     |> to_string()
   end
 end
