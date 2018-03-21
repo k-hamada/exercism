@@ -3,3 +3,7 @@ name = "diffie-hellman"
 version = "0.1.0"
 
 [dependencies]
+primal-check = "0.2.3"
+rand = "0.4"
+num-bigint = "0.1"
+num-traits = "0.1"
