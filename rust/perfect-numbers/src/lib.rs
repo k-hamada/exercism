@@ -11,10 +11,10 @@ pub fn classify(num: u64) -> Option<Classification> {
     if num <= 0 { return None; }
 
     match num.cmp(&factor_sum(num)) {
-        Ordering::Less => Some(Classification::Abundant),
-        Ordering::Greater => Some(Classification::Deficient),
-        Ordering::Equal => Some(Classification::Perfect),
-    }
+        Ordering::Less => Classification::Abundant,
+        Ordering::Greater => Classification::Deficient,
+        Ordering::Equal => Classification::Perfect,
+    }.into()
 }
 
 fn factor_sum(num: u64) -> u64 {
