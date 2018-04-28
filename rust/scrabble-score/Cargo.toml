@@ -1,3 +1,5 @@
 [package]
 name = "scrabble-score"
 version = "1.1.0"
+[dependencies]
+lazy_static = "1.0"
