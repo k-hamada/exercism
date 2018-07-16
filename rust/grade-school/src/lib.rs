@@ -1,16 +1,28 @@
-pub struct School {}
+use std::cell::RefCell;
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+
+pub struct School {
+    students: RefCell<BTreeMap<u32, BTreeSet<String>>>
+}
 
 impl School {
     pub fn new() -> School {
-        unimplemented!()
+        School  { students: RefCell::new(BTreeMap::new()) }
     }
 
     pub fn add(&mut self, grade: u32, student: &str) {
-        unimplemented!("Add {} to the roster for {}", student, grade)
+        self.students.borrow_mut()
+            .entry(grade)
+            .or_insert(BTreeSet::new())
+            .insert(student.to_string());
     }
 
     pub fn grades(&self) -> Vec<u32> {
-        unimplemented!()
+        self.students.borrow()
+            .keys()
+            .cloned()
+            .collect()
     }
 
     // If grade returned an `Option<&Vec<String>>`,
@@ -18,6 +30,8 @@ impl School {
     // By returning an owned vector instead,
     // the internal implementation is free to use whatever it chooses.
     pub fn grade(&self, grade: u32) -> Option<Vec<String>> {
-        unimplemented!("Return the list of students in {}", grade)
+        self.students.borrow()
+            .get(&grade)
+            .map(|grade| grade.iter().cloned().collect())
     }
 }
