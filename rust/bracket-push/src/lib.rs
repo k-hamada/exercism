@@ -18,7 +18,6 @@ impl Bracket {
     }
 }
 
-
 pub struct Brackets(Vec<Bracket>);
 
 impl From<&'static str> for Brackets {
@@ -34,8 +33,7 @@ impl Brackets {
         for bracket in self.0.iter() {
             if let Some(close) = bracket.to_close() {
                 stack.push(close);
-            }
-            else if bracket.is_close() {
+            } else if bracket.is_close() {
                 if Some(bracket.0) != stack.pop() {
                     return false;
                 }
