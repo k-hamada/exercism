@@ -1,28 +1,19 @@
 struct Bracket(char);
 
 impl Bracket {
-    pub fn is_open(&self) -> bool {
+    pub fn to_close(&self) -> Option<char> {
         match self.0 {
-            '[' => true,
-            '{' => true,
-            '(' => true,
-            _ => false,
+            '[' => Some(']'),
+            '{' => Some('}'),
+            '(' => Some(')'),
+            _ => None,
         }
     }
+
     pub fn is_close(&self) -> bool {
         match self.0 {
-            ']' => true,
-            '}' => true,
-            ')' => true,
+            ']' | '}' | ')' => true,
             _ => false,
-        }
-    }
-    pub fn is_pair(&self, close: &Bracket) -> bool {
-        match (self.0, close.0) {
-            ('[', ']') => true,
-            ('{', '}') => true,
-            ('(', ')') => true,
-            _ => false
         }
     }
 }
@@ -41,20 +32,16 @@ impl Brackets {
         let mut stack = Vec::new();
 
         for bracket in self.0.iter() {
-            if bracket.is_open() {
-                stack.push(bracket);
+            if let Some(close) = bracket.to_close() {
+                stack.push(close);
             }
             else if bracket.is_close() {
-                let is_pair = {
-                    if let Some(last_open) = stack.last() {
-                        last_open.is_pair(bracket)
-                    } else { false }
-                };
-                if !is_pair { return false; }
-
-                stack.pop();
+                if Some(bracket.0) != stack.pop() {
+                    return false;
+                }
             }
         }
+
         stack.is_empty()
     }
 }
