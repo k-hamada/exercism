@@ -1,6 +1,3 @@
-// The code below is a stub. Just enough to satisfy the compiler.
-// In order to pass the tests you can add-to or change any of this code.
-
 #[derive(PartialEq, Debug)]
 pub enum Direction {
     North,
@@ -9,37 +6,72 @@ pub enum Direction {
     West,
 }
 
-pub struct Robot;
+pub struct Robot {
+    x: isize,
+    y: isize,
+    d: Direction,
+}
 
 impl Robot {
     pub fn new(x: isize, y: isize, d: Direction) -> Self {
-        unimplemented!("Create a robot at (x, y) ({}, {}) facing {:?}", x, y, d,)
+        Robot { x, y, d }
     }
 
     pub fn turn_right(self) -> Self {
-        unimplemented!()
+        let d = match self.direction() {
+            &Direction::North => Direction::East,
+            &Direction::East  => Direction::South,
+            &Direction::South => Direction::West,
+            &Direction::West  => Direction::North,
+        };
+
+        Robot { d, ..self }
     }
 
     pub fn turn_left(self) -> Self {
-        unimplemented!()
+        let d = match self.direction() {
+            &Direction::North => Direction::West,
+            &Direction::East  => Direction::North,
+            &Direction::South => Direction::East,
+            &Direction::West  => Direction::South,
+        };
+
+        Robot { d, ..self }
     }
 
     pub fn advance(self) -> Self {
-        unimplemented!()
+        let (move_x, move_y) = match self.direction() {
+            &Direction::North => ( 0,  1),
+            &Direction::East  => ( 1,  0),
+            &Direction::South => ( 0, -1),
+            &Direction::West  => (-1,  0),
+        };
+
+        Robot {
+            x: self.x + move_x,
+            y: self.y + move_y,
+            ..self
+        }
     }
 
     pub fn instructions(self, instructions: &str) -> Self {
-        unimplemented!(
-            "Follow the given sequence of instructions: {}",
-            instructions
-        )
+        let mut robot = self;
+        for instruction in instructions.chars() {
+            match instruction {
+                'R' => robot = robot.turn_right(),
+                'L' => robot = robot.turn_left(),
+                'A' => robot = robot.advance(),
+                _ => panic!("crash"),
+            }
+        }
+        robot
     }
 
     pub fn position(&self) -> (isize, isize) {
-        unimplemented!()
+        (self.x, self.y)
     }
 
     pub fn direction(&self) -> &Direction {
-        unimplemented!()
+        &self.d
     }
 }
