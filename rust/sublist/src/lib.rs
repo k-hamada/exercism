@@ -20,7 +20,12 @@ pub fn sublist<T: PartialEq>(a: &[T], b: &[T]) -> Comparison {
 }
 
 fn is_sublist<T: PartialEq>(a: &[T], b: &[T]) -> bool {
+    if a.is_empty() { return true; }
     if b.is_empty() { return false; }
-    if b.starts_with(a) { return true; }
-    is_sublist(a, b.split_first().map_or(&[], |(_, tail)| tail))
+    for n in 0..a.len() {
+        if b.get(n .. n + a.len()).map_or(false, |c| a == c) {
+            return true;
+        }
+    }
+    false
 }
