@@ -1,33 +1,20 @@
-pub struct Allergies {
-    score: u32,
-}
+#[macro_use]
+extern crate bitflags;
 
-#[derive(Debug, PartialEq)]
-pub enum Allergen {
-    Eggs,
-    Peanuts,
-    Shellfish,
-    Strawberries,
-    Tomatoes,
-    Chocolate,
-    Pollen,
-    Cats,
+bitflags! {
+    pub struct Allergen: u32 {
+        const Eggs = 0b00000001;
+        const Peanuts = 0b00000010;
+        const Shellfish = 0b00000100;
+        const Strawberries = 0b00001000;
+        const Tomatoes = 0b00010000;
+        const Chocolate = 0b00100000;
+        const Pollen = 0b01000000;
+        const Cats = 0b10000000;
+    }
 }
 
 impl Allergen {
-    fn value(&self) -> u32 {
-        match *self {
-            Allergen::Eggs => 0b00000001,
-            Allergen::Peanuts => 0b00000010,
-            Allergen::Shellfish => 0b00000100,
-            Allergen::Strawberries => 0b00001000,
-            Allergen::Tomatoes => 0b00010000,
-            Allergen::Chocolate => 0b00100000,
-            Allergen::Pollen => 0b01000000,
-            Allergen::Cats => 0b10000000,
-        }
-    }
-
     fn values() -> Vec<Allergen> {
         vec![
             Allergen::Eggs,
@@ -42,13 +29,19 @@ impl Allergen {
     }
 }
 
+pub struct Allergies {
+    score: Allergen,
+}
+
 impl Allergies {
     pub fn new(score: u32) -> Self {
-        Allergies { score }
+        Allergies {
+            score: Allergen::from_bits_truncate(score),
+        }
     }
 
     pub fn is_allergic_to(&self, allergen: &Allergen) -> bool {
-        (self.score & allergen.value()) != 0
+        self.score.contains(*allergen)
     }
 
     pub fn allergies(&self) -> Vec<Allergen> {
