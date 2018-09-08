@@ -1,61 +1,74 @@
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
 #[derive(Debug, PartialEq)]
 pub struct CustomSet<T> {
-    // This field is here to make the template compile and not to
-    // complain about unused type parameter 'T'. Once you start
-    // solving the exercise, delete this field and the 'std::marker::PhantomData'
-    // import.
-    phantom: PhantomData<T>,
+    items: Vec<T>,
 }
 
-impl<T: Debug> CustomSet<T> {
+impl<T: Debug + Clone + PartialEq + Ord> CustomSet<T> {
     pub fn new(input: &[T]) -> Self {
-        unimplemented!(
-            "From the given input '{:?}' construct a new CustomSet struct.",
-            input
-        );
+        let mut items = input.to_vec();
+        items.sort();
+        items.dedup();
+
+        CustomSet { items }
     }
 
     pub fn contains(&self, element: &T) -> bool {
-        unimplemented!(
-            "Determine if the '{:?}' element is present in the CustomSet struct.",
-            element
-        );
+        self.items.as_slice().contains(element)
     }
 
     pub fn add(&mut self, element: T) {
-        unimplemented!("Add the '{:?}' element to the CustomSet struct.", element);
+        if self.contains(&element) {
+            return;
+        }
+
+        self.items.push(element);
+        self.items.sort()
     }
 
     pub fn is_subset(&self, other: &Self) -> bool {
-        unimplemented!(
-            "Determine if the CustomSet struct is a subset of the other '{:?}' struct.",
-            other
-        );
+        let other_slice = other.items.as_slice();
+
+        self.items.iter().all(|item| other_slice.contains(item))
     }
 
     pub fn is_empty(&self) -> bool {
-        unimplemented!("Determine if the CustomSet struct is empty.");
+        self.items.is_empty()
     }
 
     pub fn is_disjoint(&self, other: &Self) -> bool {
-        unimplemented!(
-            "Determine if the CustomSet struct and the other struct '{:?}' are disjoint.",
-            other
-        );
+        let other_slice = other.items.as_slice();
+
+        !self.items.iter().any(|item| other_slice.contains(item))
     }
 
     pub fn intersection(&self, other: &Self) -> Self {
-        unimplemented!("Construct a new CustomSet struct that is an intersection between current struct and the other struct '{:?}'.", other);
+        let other_slice = other.items.as_slice();
+        let items = self.items.iter()
+            .cloned()
+            .filter(|item| other_slice.contains(&item))
+            .collect::<Vec<_>>();
+
+        Self::new(&items)
     }
 
     pub fn difference(&self, other: &Self) -> Self {
-        unimplemented!("Construct a new CustomSet struct that is a difference between current struct and the other struct '{:?}'.", other);
+        let other_slice = other.items.as_slice();
+        let items = self.items.iter()
+            .cloned()
+            .filter(|item| !other_slice.contains(&item))
+            .collect::<Vec<_>>();
+
+        Self::new(&items)
     }
 
     pub fn union(&self, other: &Self) -> Self {
-        unimplemented!("Construct a new CustomSet struct that is an union between current struct and the other struct '{:?}'.", other);
+        let items = self.items.iter()
+            .chain(other.items.iter())
+            .cloned()
+            .collect::<Vec<_>>();
+
+        Self::new(&items)
     }
 }
