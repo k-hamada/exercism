@@ -1,5 +1,6 @@
-use std::collections::VecDeque;
 use std::collections::HashSet;
+use std::collections::VecDeque;
+use std::hash::{Hash, Hasher};
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Bucket {
@@ -21,45 +22,120 @@ pub struct BucketStats {
 
 /// Solve the bucket problem
 pub fn solve(capacity_1: u8, capacity_2: u8, goal: u8, start_bucket: &Bucket) -> BucketStats {
-    let mut buf = VecDeque::new();
+    let mut queue = VecDeque::new();
     let mut checked = HashSet::new();
 
-    let start = match start_bucket {
-        &Bucket::One => ((capacity_1, 0), 1),
-        &Bucket::Two => ((0, capacity_2), 1),
+    let (start, ignore) = match start_bucket {
+        &Bucket::One => ((Buckets::new(capacity_1, 0)), Buckets::new(0, capacity_2)),
+        &Bucket::Two => ((Buckets::new(0, capacity_2)), Buckets::new(capacity_1, 0)),
     };
-    buf.push_back(start);
-    match start_bucket {
-        &Bucket::One => checked.insert((0, capacity_2)),
-        &Bucket::Two => checked.insert((capacity_1, 0)),
-    };
+    queue.push_back(start);
+    checked.insert(ignore);
 
-    while let Some((b, moves)) = buf.pop_front() {
-        if checked.contains(&b) { continue; }
-        checked.insert(b);
+    while let Some(buckets) = queue.pop_front() {
+        if checked.contains(&buckets) {
+            continue;
+        }
 
-        if b.0 == goal {
-            return BucketStats { moves, goal_bucket: Bucket::One, other_bucket: b.1 }
+        if let Some(stats) = buckets.check(goal) {
+            return stats;
         }
-        if b.1 == goal {
-            return BucketStats { moves, goal_bucket: Bucket::Two, other_bucket: b.0 }
-        }
-        buf.push_back((move_to_one(b, capacity_1), moves + 1));
-        buf.push_back((move_to_two(b, capacity_2), moves + 1));
-        buf.push_back(((b.0, 0), moves + 1));
-        buf.push_back(((0, b.1), moves + 1));
-        buf.push_back(((b.0.max(capacity_1), b.1), moves + 1));
-        buf.push_back(((b.0, b.1.max(capacity_2)), moves + 1));
+
+        queue.push_back(buckets.move_to_one(capacity_1));
+        queue.push_back(buckets.move_to_two(capacity_2));
+        queue.push_back(buckets.fill_at_one(capacity_1));
+        queue.push_back(buckets.fill_at_two(capacity_2));
+        queue.push_back(buckets.empty_at_one());
+        queue.push_back(buckets.empty_at_two());
+
+        checked.insert(buckets);
     }
-    return BucketStats { moves: 0, goal_bucket: Bucket::One, other_bucket: 0 }
+
+    return BucketStats {
+        moves: 0,
+        goal_bucket: Bucket::One,
+        other_bucket: 0,
+    };
 }
 
-fn move_to_one(bucket: (u8, u8), capacity_1: u8) -> (u8, u8) {
-    let space_1 = (capacity_1 - bucket.0).min(bucket.1);
-    (bucket.0 + space_1, bucket.1 - space_1)
+struct Buckets {
+    bucket_1: u8,
+    bucket_2: u8,
+    moves: u8,
 }
 
-fn move_to_two(bucket: (u8, u8), capacity_2: u8) -> (u8, u8) {
-    let moved = move_to_one((bucket.1, bucket.0), capacity_2);
-    (moved.1, moved.0)
+impl Buckets {
+    fn new(bucket_1: u8, bucket_2: u8) -> Self {
+        Buckets::new_with_moved(bucket_1, bucket_2, 1)
+    }
+
+    fn new_with_moved(bucket_1: u8, bucket_2: u8, moves: u8) -> Self {
+        Buckets {
+            bucket_1,
+            bucket_2,
+            moves,
+        }
+    }
+
+    fn move_to_one(&self, capacity_1: u8) -> Self {
+        let space_1 = (capacity_1 - self.bucket_1).min(self.bucket_2);
+        Buckets::new_with_moved(
+            self.bucket_1 + space_1,
+            self.bucket_2 - space_1,
+            self.moves + 1,
+        )
+    }
+
+    fn move_to_two(&self, capacity_2: u8) -> Self {
+        Buckets::move_to_one(&self.swap(), capacity_2).swap()
+    }
+
+    fn fill_at_one(&self, capacity_1: u8) -> Self {
+        Buckets::new_with_moved(self.bucket_1.max(capacity_1), self.bucket_2, self.moves + 1)
+    }
+
+    fn fill_at_two(&self, capacity_2: u8) -> Self {
+        Buckets::new_with_moved(self.bucket_1, self.bucket_2.max(capacity_2), self.moves + 1)
+    }
+
+    fn empty_at_one(&self) -> Self {
+        Buckets::new_with_moved(0, self.bucket_2, self.moves + 1)
+    }
+
+    fn empty_at_two(&self) -> Self {
+        Buckets::empty_at_one(&self.swap()).swap()
+    }
+
+    fn swap(&self) -> Self {
+        Buckets::new_with_moved(self.bucket_2, self.bucket_1, self.moves)
+    }
+
+    fn check(&self, goal: u8) -> Option<BucketStats> {
+        match goal {
+            _ if goal == self.bucket_1 => Some(BucketStats {
+                moves: self.moves,
+                goal_bucket: Bucket::One,
+                other_bucket: self.bucket_2,
+            }),
+            _ if goal == self.bucket_2 => Some(BucketStats {
+                moves: self.moves,
+                goal_bucket: Bucket::Two,
+                other_bucket: self.bucket_1,
+            }),
+            _ => None,
+        }
+    }
+}
+
+impl PartialEq for Buckets {
+    fn eq(&self, other: &Buckets) -> bool {
+        self.bucket_1 == other.bucket_1 && self.bucket_2 == other.bucket_2
+    }
+}
+impl Eq for Buckets {}
+impl Hash for Buckets {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.bucket_1.hash(state);
+        self.bucket_2.hash(state);
+    }
 }
