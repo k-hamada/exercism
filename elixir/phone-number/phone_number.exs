@@ -24,6 +24,24 @@ defmodule Phone do
   """
   @spec number(String.t) :: String.t
   def number(raw) do
+    Regex.scan(~r/\+?(\d{0,1}).*(\d{3}).*(\d{3}).*(\d{4})/, raw, capture: :all_but_first)
+    |> List.flatten
+    |> Enum.flat_map(&String.graphemes/1)
+    |> Enum.map(&String.to_integer/1)
+    |> format
+    |> Enum.join
+  end
+
+  defp format([1 | number]) do
+    format(number)
+  end
+
+  defp format([a, b, c, d, e, f, g, h, i, j]) when a in 2..9 and d in 2..9 do
+    [a, b, c, d, e, f, g, h, i, j]
+  end
+
+  defp format(_) do
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   end
 
   @doc """
@@ -48,6 +66,9 @@ defmodule Phone do
   """
   @spec area_code(String.t) :: String.t
   def area_code(raw) do
+    raw
+    |> number
+    |> String.slice(0..2)
   end
 
   @doc """
@@ -72,5 +93,8 @@ defmodule Phone do
   """
   @spec pretty(String.t) :: String.t
   def pretty(raw) do
+    raw
+    |> number
+    |> String.replace(~r/(\d{3})(\d{3})(\d{4})/, "(\\1) \\2-\\3")
   end
 end
