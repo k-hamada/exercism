@@ -102,18 +102,25 @@ impl GrepLine {
 }
 
 pub fn grep(pattern: &str, flags: &Flags, files: &[&str]) -> Result<Vec<String>, Error> {
-    let many_files = files.len() > 1;
-    let mut result = vec![];
     let pattern = GrepPattern::new(pattern, flags);
-    for file in files {
-        let contents = fs::read_to_string(file)?;
-        let mut candidate = contents.lines().enumerate()
+    let many_files = files.len() > 1;
+
+    files.iter()
+    .map(|file| fs::read_to_string(file).map(|contents| (file, contents)))
+    .collect::<Result<Vec<_>, _>>()
+    .map(|files| files.iter().flat_map(|(file, contents)| {
+        let mut candidate = contents
+            .lines()
+            .enumerate()
             .map(|(i, line)| GrepLine::new(line, file, i))
             .filter(|line| line.include(&pattern))
             .map(|line| line.to_string(flags, many_files))
             .collect::<Vec<_>>();
-        if flags.l { candidate.dedup(); };
-        result.append(&mut candidate);
-    }
-    Ok(result)
+        if flags.l {
+            candidate.dedup();
+        };
+        candidate
+    }).collect::<_>()
+    )
+    .map_err(|e| e.into())
 }
