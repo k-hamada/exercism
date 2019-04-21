@@ -1,14 +1,6 @@
 use failure::Error;
 use std::fs;
 
-/// While using raw slice of str to handle flags is convenient,
-/// in the real-world projects it is customary to use a struct,
-/// that contains flags-related logic. So in this exercise
-/// we ask you to implement a custom struct.
-///
-/// If you are curious about real-world implementation, refer to the `clap-rs` crate:
-/// https://github.com/kbknapp/clap-rs/blob/master/src/args/arg_matches.rs
-#[derive(Debug)]
 pub struct Flags {
     n: bool,
     i: bool,
@@ -29,7 +21,6 @@ impl Flags {
     }
 }
 
-#[derive(Debug)]
 struct GrepPattern {
     context: String,
     case_insensitive: bool,
@@ -67,7 +58,6 @@ impl GrepPattern {
     }
 }
 
-#[derive(Debug)]
 struct GrepLine {
     context: String,
     file: String,
@@ -93,9 +83,9 @@ impl GrepLine {
         }
 
         match (flags.n, flags.l || many_files) {
-            (true, true) => format!( "{file}:{number}:{line}", line = self.context, file = self.file, number = self.number),
-            (true, false) => format!("{number}:{line}", number = self.number, line = self.context),
-            (false, true) => format!("{file}:{line}", file = self.file, line = self.context),
+            (true, true) => format!("{}:{}:{}", self.file, self.number, self.context),
+            (true, false) => format!("{}:{}", self.number, self.context),
+            (false, true) => format!("{}:{}", self.file, self.context),
             (false, false) => self.context.to_string(),
         }
     }
@@ -105,22 +95,35 @@ pub fn grep(pattern: &str, flags: &Flags, files: &[&str]) -> Result<Vec<String>,
     let pattern = GrepPattern::new(pattern, flags);
     let many_files = files.len() > 1;
 
-    files.iter()
-    .map(|file| fs::read_to_string(file).map(|contents| (file, contents)))
-    .collect::<Result<Vec<_>, _>>()
-    .map(|files| files.iter().flat_map(|(file, contents)| {
-        let mut candidate = contents
-            .lines()
-            .enumerate()
-            .map(|(i, line)| GrepLine::new(line, file, i))
-            .filter(|line| line.include(&pattern))
-            .map(|line| line.to_string(flags, many_files))
-            .collect::<Vec<_>>();
-        if flags.l {
-            candidate.dedup();
-        };
-        candidate
-    }).collect::<_>()
-    )
-    .map_err(|e| e.into())
+    files
+        .iter()
+        .map(|file| fs::read_to_string(file).map(|contents| (file, contents)))
+        .collect::<Result<Vec<_>, _>>()
+        .map(|files| {
+            files
+                .iter()
+                .flat_map(|(name, contents)| file_grep(name, contents, &pattern, flags, many_files))
+                .collect()
+        })
+        .map_err(std::convert::Into::into)
+}
+
+fn file_grep(
+    name: &str,
+    contents: &str,
+    pattern: &GrepPattern,
+    flags: &Flags,
+    many_files: bool,
+) -> Vec<String> {
+    let mut candidate = contents
+        .lines()
+        .enumerate()
+        .map(|(i, line)| GrepLine::new(line, name, i))
+        .filter(|line| line.include(pattern))
+        .map(|line| line.to_string(flags, many_files))
+        .collect::<Vec<_>>();
+    if flags.l {
+        candidate.dedup();
+    };
+    candidate
 }
