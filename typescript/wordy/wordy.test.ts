@@ -86,4 +86,8 @@ describe('Word Problem', () => {
     expect(problem.answer.bind(problem)).toThrowError( ArgumentError )
   })
 
+  it('exponentials', () => {
+    const question = 'What is 2 raised to the 5th power?'
+    expect(new WordProblem(question).answer()).toEqual(32)
+  })
 })

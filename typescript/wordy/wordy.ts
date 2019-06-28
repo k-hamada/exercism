@@ -61,6 +61,12 @@ class Divide extends Operation {
     }
 }
 
+class Exponential extends Operation {
+    constructor(input: string) {
+        super(input, /^ raised to the (-?\d+)th power\??/)
+    }
+}
+
 export class WordProblem {
     constructor(readonly question: string) {
     }
@@ -80,6 +86,7 @@ export class WordProblem {
                 new Subtract(question),
                 new Multiply(question),
                 new Divide(question),
+                new Exponential(question),
             ].find((op) => op.isValid)
 
             if (word === undefined) {
@@ -107,6 +114,9 @@ export class WordProblem {
         }
         if (cur instanceof Divide) {
             return new Result(acc.value / cur.value)
+        }
+        if (cur instanceof Exponential) {
+            return new Result(acc.value ** cur.value)
         }
 
         throw new ArgumentError(`calc error: ${ acc }, ${ cur }`)
