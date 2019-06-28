@@ -1,18 +1,13 @@
 class CollatzConjecture {
     static steps(n: number): number {
-        if (n <= 0) throw new Error('Only positive numbers are allowed')
+        return CollatzConjecture.stepsImpl(0, n)
+    }
 
-        let step = 0
-        while (n !== 1) {
-            step++
-            if (n % 2 === 0) {
-                n /= 2
-            } else {
-                n *= 3
-                n += 1
-            }
-        }
-        return step
+    static stepsImpl(step: number, n: number): number {
+        if (n <= 0) throw new Error('Only positive numbers are allowed')
+        if (n === 1) return step
+        if (n % 2 === 0) return this.stepsImpl(step + 1, n / 2)
+        return this.stepsImpl(step + 1, (n * 3) + 1)
     }
 }
 
