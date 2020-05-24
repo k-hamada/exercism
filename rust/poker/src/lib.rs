@@ -10,22 +10,28 @@ use std::cmp::Ordering;
 /// the winning hand(s) as were passed in, not reconstructed strings which happen to be equal.
 pub fn winning_hands<'a>(hands: &[&'a str]) -> Option<Vec<&'a str>> {
     let mut result = vec![];
-    let mut top = Hand::None;
+    let mut top_hand = Hand::None;
+
     for hand in hands {
         let cards = Cards::new(hand);
+        let cards_hand = cards.hand();
+
         if result.is_empty() {
             result.push(*hand);
-            top = cards.hand();
-        } else if top < cards.hand() {
-            result.clear();
+            top_hand = cards_hand;
+            continue;
+        }
+
+        if top_hand <= cards_hand {
+            if top_hand < cards_hand {
+                result.clear();
+            }
             result.push(*hand);
-            top = cards.hand();
-        } else if top == cards.hand() {
-            result.push(*hand);
-            top = cards.hand();
+            top_hand = cards_hand;
         }
     }
-    Some(result)
+
+    result.into()
 }
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -36,20 +42,10 @@ pub enum Suit {
     Heart,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Card {
     pub number: u8,
     pub suit: Suit,
-}
-
-impl Ord for Card {
-    fn cmp(&self, other: &Card) -> Ordering {
-        if self.number == other.number {
-            self.suit.cmp(&other.suit)
-        } else {
-            self.number.cmp(&other.number)
-        }
-    }
 }
 
 impl Card {
@@ -65,6 +61,7 @@ impl Card {
             Some(num) => num.parse().unwrap(),
             _ => panic!(),
         };
+
         let suit = match caps.name("suit").map(|suit| suit.as_str()) {
             Some("S") => Suit::Spade,
             Some("C") => Suit::Club,
@@ -82,18 +79,14 @@ pub struct HighCards(Vec<u8>);
 
 impl Ord for HighCards {
     fn cmp(&self, other: &HighCards) -> Ordering {
-        for (x, y) in self
-            .0
-            .iter()
-            .sorted()
-            .rev()
-            .zip_eq(other.0.iter().sorted().rev())
-        {
-            if x == y {
-                continue;
-            }
+        let self_high_cards = self.0.iter().sorted().rev();
+        let other_high_cards = other.0.iter().sorted().rev();
 
-            return x.cmp(&y);
+        for (x, y) in self_high_cards.zip_eq(other_high_cards) {
+            match x.cmp(&y) {
+                Ordering::Equal => continue,
+                ord => return ord,
+            }
         }
 
         Ordering::Equal
@@ -173,15 +166,17 @@ impl Cards {
             .collect::<Vec<_>>()
     }
 
+    fn max_number(&self) -> u8 {
+        *self.numbers().iter().max().unwrap()
+    }
+
     fn suits(&self) -> Vec<Suit> {
         self.cards.iter().map(|hand| hand.suit).collect::<Vec<_>>()
     }
 
     fn is_straight_flush_hand(&self) -> Option<Hand> {
         if self.is_straight() && self.is_flush_hand().is_some() {
-            if let Some(rank) = self.numbers().iter().max() {
-                return Hand::StraightFlush(*rank).into();
-            }
+            return Hand::StraightFlush(self.max_number()).into();
         }
 
         None
@@ -189,13 +184,11 @@ impl Cards {
 
     fn is_straight_hand(&self) -> Option<Hand> {
         if self.is_straight() {
-            if let Some(rank) = self.numbers().iter().max() {
-                return Hand::Straight(*rank).into();
-            }
+            return Hand::Straight(self.max_number()).into();
         }
 
+        // 10 J Q K A
         if self.numbers()[..] == [2, 3, 4, 5, 14] {
-            // 10 J Q K A
             return Hand::Straight(5).into();
         }
 
@@ -211,11 +204,8 @@ impl Cards {
 
     pub fn is_flush_hand(&self) -> Option<Hand> {
         let unique_suits = self.suits().iter().sorted().dedup().count() == 1;
-
         if unique_suits {
-            if let Some(rank) = self.numbers().iter().max() {
-                return Hand::Flush(*rank).into();
-            }
+            return Hand::Flush(self.max_number()).into();
         }
 
         None
