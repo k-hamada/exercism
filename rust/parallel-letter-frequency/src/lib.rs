@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 
-pub fn frequency(input: &[&str], worker_count: usize) -> HashMap<char, usize> {
-    unimplemented!(
-        "Count the frequency of letters in the given input '{:?}'. Ensure that you are using {} to process the input.",
-        input,
-        match worker_count {
-            1 => format!("1 worker"),
-            _ => format!("{} workers", worker_count),
+pub fn frequency(input: &[&str], _worker_count: usize) -> HashMap<char, usize> {
+    let mut hm = HashMap::new();
+    for words in input {
+        for char in words.to_string().to_lowercase().chars() {
+            if !char.is_alphabetic() { continue; }
+
+            let entry = hm.entry(char).or_insert(0);
+            *entry += 1;
         }
-    );
+    }
+    hm
 }
